@@ -32,6 +32,12 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      
+      ["expo-font",
+        {
+          "fonts": ["./src/fonts/Geomanist-Medium.ttf"]
+        }
       ]
     ],
     "experiments": {
