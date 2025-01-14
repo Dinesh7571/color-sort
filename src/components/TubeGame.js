@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, TouchableOpacity, Button } from "react-native";
+import { StyleSheet, View, TouchableOpacity, Image } from "react-native";
 import CustomButton from "./CustomButton";
 
 const TubeGame = () => {
@@ -26,8 +26,8 @@ const TubeGame = () => {
 
   const handleTransfer = (id) => {
     if (selectedColor) {
-      const id1 = selected1Tube; 
-      const id2 = id; 
+      const id1 = selected1Tube;
+      const id2 = id;
 
       if (
         id1 !== null &&
@@ -44,10 +44,7 @@ const TubeGame = () => {
         second.push(first.pop());
 
         // Transfer all consecutive matching colors
-        while (
-          first.at(-1) === second.at(-1) &&
-          second.length < 4
-        ) {
+        while (first.at(-1) === second.at(-1) && second.length < 4) {
           second.push(first.pop());
         }
 
@@ -77,7 +74,7 @@ const TubeGame = () => {
             <TouchableOpacity
               key={tube.id}
               style={[
-                styles.glass,
+                styles.tubeContainer,
                 selected1Tube === tube.id && styles.selectedGlass,
               ]}
               onPress={() => handleTransfer(tube.id)}
@@ -90,6 +87,7 @@ const TubeGame = () => {
                       styles.color,
                       {
                         backgroundColor: rang[color - 1],
+                        bottom: index * 30,
                         borderBottomLeftRadius: index === 0 ? 30 : 0,
                         borderBottomRightRadius: index === 0 ? 30 : 0,
                       },
@@ -97,24 +95,29 @@ const TubeGame = () => {
                   />
                 ))
                 .reverse()}
+
+              <Image
+                source={require("../images/tube.png")}
+                style={styles.tubeImage}
+                resizeMode="contain"
+              />
             </TouchableOpacity>
           );
         })}
       </View>
       <CustomButton
         title="Reset"
-        backgroundImage={require('../images/woodbtn1.png')}
+        backgroundImage={require("../images/woodbtn1.png")}
         onPress={initializeColor}
-        symbolIcon={require('../images/refresh.png')}
+        symbolIcon={require("../images/refresh.png")}
       />
- 
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   main: {
-    flex:1,
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -124,25 +127,31 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     marginBottom: 20,
   },
-  glass: {
-    width: 45,
+  tubeContainer: {
+    width: 60,
     height: 210,
-    marginHorizontal: 10,
-    borderWidth:1,
-   borderTopWidth:0,
-    borderColor: "#ccc",
-    borderBottomEndRadius:30,
-    borderBottomStartRadius:30,
     justifyContent: "flex-end",
+    position: "relative",
     overflow: "hidden",
   },
   selectedGlass: {
-    borderColor: "black",
+    borderWidth:1,
     transform: [{ scale: 1.05 }],
   },
   color: {
+    width: 50,
+    left: 5,
+    opacity: 0.6,
+    height: 30,
+    position: "absolute",
+    zIndex: 1,
+  },
+  tubeImage: {
     width: "100%",
-    height: 50,
+    height: "100%",
+    position: "absolute",
+    zIndex: 2,
+    top: 20,
   },
 });
 
