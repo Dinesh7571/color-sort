@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   selectedGlass: {
-    borderWidth:1,
+   // borderWidth:1,
     transform: [{ scale: 1.05 }],
   },
   color: {
