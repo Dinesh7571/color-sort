@@ -1,11 +1,12 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
+import ScreenBackground from '../components/ScreenBackground'
 
 const Home = () => {
   return (
-    <View>
+    <ScreenBackground backgroundImage={require('../images/bg.jpg')}>
       <Text>Home</Text>
-    </View>
+    </ScreenBackground>
   )
 }
 
