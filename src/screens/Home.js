@@ -1,11 +1,15 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import ScreenBackground from '../components/ScreenBackground'
+import { useNavigation } from 'expo-router'
 
 const Home = () => {
+  const navigation =useNavigation()
   return (
     <ScreenBackground backgroundImage={require('../images/bg.jpg')}>
-      <Text>Home</Text>
+      <TouchableOpacity onPress={()=>navigation.navigate('GameScreen')}>
+<Text>Game Screen</Text>
+      </TouchableOpacity>
     </ScreenBackground>
   )
 }
