@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, TouchableOpacity, Image } from "react-native";
+import { StyleSheet, View, TouchableOpacity, Image, Text } from "react-native";
 import CustomButton from "./CustomButton";
+import { mmkvStorage } from "../state/storage";
 
 const TubeGame = () => {
   const rang = ["red", "green", "aqua", "yellow"];
+  const totalLevels = 10; // Number of levels
 
   const [glass, setGlass] = useState([]);
   const [selectedColor, setSelectedColor] = useState(false);
   const [selected1Tube, setSelected1Tube] = useState(null);
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [unlockedLevels, setUnlockedLevels] = useState([1]);
 
+  // Initialize color tubes based on the level
   const initializeColor = () => {
     const randomColor = [1, 2, 3, 4];
     const tube = [
-      [...randomColor].sort(() => Math.random() - 0.5),
-      [...randomColor].sort(() => Math.random() - 0.5),
       [...randomColor].sort(() => Math.random() - 0.5),
       [...randomColor].sort(() => Math.random() - 0.5),
       [],
@@ -22,6 +25,25 @@ const TubeGame = () => {
       return { id: index, value };
     });
     setGlass(tube);
+  };
+
+  // Check if the current level is completed
+  const checkLevelCompletion = () => {
+    const isCompleted = glass.every(
+      (tube) =>
+        tube.value.length === 0 || tube.value.every((color) => color === tube.value[0])
+    );
+
+    if (isCompleted) {
+      const nextLevel = currentLevel + 1;
+      if (nextLevel <= totalLevels && !unlockedLevels.includes(nextLevel)) {
+        const updatedUnlockedLevels = [...unlockedLevels, nextLevel];
+        setUnlockedLevels(updatedUnlockedLevels);
+
+        // Save progress
+        mmkvStorage.setItem("unlockedLevels", JSON.stringify(updatedUnlockedLevels));
+      }
+    }
   };
 
   const handleTransfer = (id) => {
@@ -40,10 +62,8 @@ const TubeGame = () => {
         let first = [...glass[id1].value];
         let second = [...glass[id2].value];
 
-        // Transfer the topmost color
         second.push(first.pop());
 
-        // Transfer all consecutive matching colors
         while (first.at(-1) === second.at(-1) && second.length < 4) {
           second.push(first.pop());
         }
@@ -53,6 +73,7 @@ const TubeGame = () => {
         updatedGlass[id2].value = second;
 
         setGlass(updatedGlass);
+        checkLevelCompletion(); // Check if the level is completed after each transfer
       }
       setSelectedColor(false);
       setSelected1Tube(null);
@@ -62,48 +83,55 @@ const TubeGame = () => {
     }
   };
 
+  // Load saved progress from local storage
+  const loadProgress = () => {
+    const savedLevels = mmkvStorage.getItem("unlockedLevels");
+    if (savedLevels) {
+      setUnlockedLevels(JSON.parse(savedLevels));
+    }
+  };
+
   useEffect(() => {
+    loadProgress();
     initializeColor();
   }, []);
 
   return (
     <View style={styles.main}>
+      <Text style={styles.levelText}>Level {currentLevel}</Text>
       <View style={styles.container}>
-        {glass.map((tube) => {
-          return (
-            <TouchableOpacity
-              key={tube.id}
-              style={[
-                styles.tubeContainer,
-                selected1Tube === tube.id && styles.selectedGlass,
-              ]}
-              onPress={() => handleTransfer(tube.id)}
-            >
-              {tube.value
-                .map((color, index) => (
-                  <View
-                    key={index}
-                    style={[
-                      styles.color,
-                      {
-                        backgroundColor: rang[color - 1],
-                        bottom: index * 30,
-                        borderBottomLeftRadius: index === 0 ? 30 : 0,
-                        borderBottomRightRadius: index === 0 ? 30 : 0,
-                      },
-                    ]}
-                  />
-                ))
-                .reverse()}
-
-              <Image
-                source={require("../images/tube.png")}
-                style={styles.tubeImage}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-          );
-        })}
+        {glass.map((tube) => (
+          <TouchableOpacity
+            key={tube.id}
+            style={[
+              styles.tubeContainer,
+              selected1Tube === tube.id && styles.selectedGlass,
+            ]}
+            onPress={() => handleTransfer(tube.id)}
+          >
+            {tube.value
+              .map((color, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.color,
+                    {
+                      backgroundColor: rang[color - 1],
+                      bottom: index * 30,
+                      borderBottomLeftRadius: index === 0 ? 30 : 0,
+                      borderBottomRightRadius: index === 0 ? 30 : 0,
+                    },
+                  ]}
+                />
+              ))
+              .reverse()}
+            <Image
+              source={require("../images/tube.png")}
+              style={styles.tubeImage}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        ))}
       </View>
       <CustomButton
         title="Reset"
@@ -121,6 +149,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  levelText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
   container: {
     flexDirection: "row",
     justifyContent: "center",
@@ -135,7 +168,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   selectedGlass: {
-   borderWidth:1,
+    borderWidth: 1,
     transform: [{ scale: 1.05 }],
   },
   color: {
