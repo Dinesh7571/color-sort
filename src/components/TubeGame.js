@@ -2,10 +2,11 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, View, TouchableOpacity, Image, Text } from "react-native";
 import CustomButton from "./CustomButton";
 import { mmkvStorage } from "../state/storage";
+import gameLevels from "../utils/gameLevels";
 
 const TubeGame = () => {
-  const rang = ["red", "green", "aqua", "yellow"];
-  const totalLevels = 10; // Number of levels
+  const rang = ["red", "green", "aqua", "yellow", "purple"];
+  const totalLevels = gameLevels.length;
 
   const [glass, setGlass] = useState([]);
   const [selectedColor, setSelectedColor] = useState(false);
@@ -13,18 +14,13 @@ const TubeGame = () => {
   const [currentLevel, setCurrentLevel] = useState(1);
   const [unlockedLevels, setUnlockedLevels] = useState([1]);
 
-  // Initialize color tubes based on the level
-  const initializeColor = () => {
-    const randomColor = [1, 2, 3, 4];
-    const tube = [
-      [...randomColor].sort(() => Math.random() - 0.5),
-      [...randomColor].sort(() => Math.random() - 0.5),
-      [],
-      [],
-    ].map((value, index) => {
-      return { id: index, value };
-    });
-    setGlass(tube);
+  // Initialize the current level tubes
+  const initializeLevel = (level) => {
+    const levelData = gameLevels.find((lvl) => lvl.id === level);
+    if (levelData) {
+      const tubes = levelData.tubes.map((value, index) => ({ id: index, value }));
+      setGlass(tubes);
+    }
   };
 
   // Check if the current level is completed
@@ -42,6 +38,10 @@ const TubeGame = () => {
 
         // Save progress
         mmkvStorage.setItem("unlockedLevels", JSON.stringify(updatedUnlockedLevels));
+      }
+      if (nextLevel <= totalLevels) {
+        setCurrentLevel(nextLevel);
+        initializeLevel(nextLevel);
       }
     }
   };
@@ -93,7 +93,7 @@ const TubeGame = () => {
 
   useEffect(() => {
     loadProgress();
-    initializeColor();
+    initializeLevel(currentLevel);
   }, []);
 
   return (
@@ -136,7 +136,7 @@ const TubeGame = () => {
       <CustomButton
         title="Reset"
         backgroundImage={require("../images/woodbtn1.png")}
-        onPress={initializeColor}
+        onPress={() => initializeLevel(currentLevel)}
         symbolIcon={require("../images/refresh.png")}
       />
     </View>
