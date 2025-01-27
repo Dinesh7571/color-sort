@@ -5,7 +5,7 @@ import { mmkvStorage } from "../state/storage";
 import gameLevels from "../utils/gameLevels";
 
 const TubeGame = () => {
-  const rang = ["red", "green", "aqua", "yellow", "purple"];
+  const rang = ["red", "green", "aqua", "yellow"];
   const totalLevels = gameLevels.length;
 
   const [glass, setGlass] = useState([]);
