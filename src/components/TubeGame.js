@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, TouchableOpacity, Image, Text } from "react-native";
+import { StyleSheet, View, TouchableOpacity, Image, Text, Modal, FlatList } from "react-native";
 import CustomButton from "./CustomButton";
 import { mmkvStorage } from "../state/storage";
 import gameLevels from "../utils/gameLevels";
@@ -13,17 +13,17 @@ const TubeGame = () => {
   const [selected1Tube, setSelected1Tube] = useState(null);
   const [currentLevel, setCurrentLevel] = useState(1);
   const [unlockedLevels, setUnlockedLevels] = useState([1]);
+  const [isLevelMenuVisible, setLevelMenuVisible] = useState(false); // Control level menu visibility
 
-  // Initialize the current level tubes
   const initializeLevel = (level) => {
     const levelData = gameLevels.find((lvl) => lvl.id === level);
     if (levelData) {
       const tubes = levelData.tubes.map((value, index) => ({ id: index, value }));
       setGlass(tubes);
+      setCurrentLevel(level);
     }
   };
 
-  // Check if the current level is completed
   const checkLevelCompletion = () => {
     const isCompleted = glass.every(
       (tube) =>
@@ -36,11 +36,9 @@ const TubeGame = () => {
         const updatedUnlockedLevels = [...unlockedLevels, nextLevel];
         setUnlockedLevels(updatedUnlockedLevels);
 
-        // Save progress
         mmkvStorage.setItem("unlockedLevels", JSON.stringify(updatedUnlockedLevels));
       }
       if (nextLevel <= totalLevels) {
-        setCurrentLevel(nextLevel);
         initializeLevel(nextLevel);
       }
     }
@@ -73,7 +71,7 @@ const TubeGame = () => {
         updatedGlass[id2].value = second;
 
         setGlass(updatedGlass);
-        checkLevelCompletion(); // Check if the level is completed after each transfer
+        checkLevelCompletion();
       }
       setSelectedColor(false);
       setSelected1Tube(null);
@@ -83,7 +81,6 @@ const TubeGame = () => {
     }
   };
 
-  // Load saved progress from local storage
   const loadProgress = () => {
     const savedLevels = mmkvStorage.getItem("unlockedLevels");
     if (savedLevels) {
@@ -139,6 +136,43 @@ const TubeGame = () => {
         onPress={() => initializeLevel(currentLevel)}
         symbolIcon={require("../images/refresh.png")}
       />
+      <CustomButton
+        title="Select Level"
+        backgroundImage={require("../images/woodbtn1.png")}
+        onPress={() => setLevelMenuVisible(true)}
+        symbolIcon={require("../images/level.png")}
+      />
+      <Modal
+        visible={isLevelMenuVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setLevelMenuVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Select Level</Text>
+          <FlatList
+            data={unlockedLevels}
+            keyExtractor={(item) => item.toString()}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.levelButton}
+                onPress={() => {
+                  initializeLevel(item);
+                  setLevelMenuVisible(false);
+                }}
+              >
+                <Text style={styles.levelButtonText}>Level {item}</Text>
+              </TouchableOpacity>
+            )}
+          />
+          <CustomButton
+            title="Close"
+            onPress={() => setLevelMenuVisible(false)}
+            backgroundImage={require("../images/woodbtn1.png")}
+            symbolIcon={require("../images/close.png")}
+          />
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -186,6 +220,30 @@ const styles = StyleSheet.create({
     zIndex: 2,
     top: 20,
   },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
+    color: "white",
+  },
+  levelButton: {
+    backgroundColor: "#fff",
+    padding: 10,
+    margin: 5,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  levelButtonText: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+
 });
 
 export default TubeGame;
